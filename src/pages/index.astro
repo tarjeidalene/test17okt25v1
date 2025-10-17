@@ -1,11 +1,54 @@
 ---
-import Welcome from '../components/Welcome.astro';
 import Layout from '../layouts/Layout.astro';
+import { db, Bruker } from 'astro:db';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+if (Astro.request.method === 'POST') {
+  
+  // Parse form data
+  const formData = await Astro.request.formData();
+  
+  const fornavn = formData.get('fornavn');
+  const etternavn = formData.get('etternavn');
+  
+  if (typeof fornavn === 'string' && typeof etternavn === 'string') {
+    
+  // Insert form data into the Bruker table
+    await db.insert(Bruker).values({ fornavn, etternavn });
+  }
+  return Astro.redirect(Astro.url.pathname);
+  
+}
+
+const brukere = await db.select().from(Bruker);
 ---
 
 <Layout>
-	<Welcome />
+	
+	<h1>Test AstroDB</h1>
+
+<h2>Skjema</h2>
+
+<form method="POST" style="display: grid">
+  
+  <label for="fornavn">Fornavn:</label>
+  <input id="fornavn" name="fornavn" />
+
+  <label for="etternavn">Etternavn:</label>
+  <input id="etternavn" name="etternavn" />
+
+  <button type="submit">Trykk</button>
+
+</form>
+
+
+<h2>Innhold i DB</h2>
+
+{
+  brukere.map(({ id, fornavn, etternavn }) => (
+    <article>
+      <p>Bruker {id}: {fornavn} {etternavn}</p>
+    </article>
+  ))
+}
+
 </Layout>
